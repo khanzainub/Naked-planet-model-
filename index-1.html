@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Naked Planet Model | नेकेड प्लैनेट मॉडल</title>
+<style>
+  :root {
+    --bg: #0b0b0c;
+    --surface: #151517;
+    --surface2: #1c1c1f;
+    --border: #2b2b30;
+    --border-strong: #3d3d44;
+    --text: #f2f2f3;
+    --text2: #a4a4ac;
+    --amber: #EF9F27;
+    --gray: #9a9a96;
+    --coral: #F0704A;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Devanagari", "Mangal", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 600px; margin: 0 auto; padding: 20px 16px 40px; }
+  header { margin-bottom: 18px; }
+  .toprow { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  h1 { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
+  .sub { font-size: 14px; color: var(--text2); margin: 0; }
+  .lang { display: flex; border: 1px solid var(--border-strong); border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+  .lang button { background: transparent; color: var(--text2); border: 0; padding: 7px 12px; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .lang button.on { background: var(--text); color: var(--bg); font-weight: 500; }
+
+  .stephead { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+  #dots { display: flex; gap: 8px; }
+  #dots button {
+    width: 30px; height: 30px; border-radius: 50%; padding: 0; font-size: 13px;
+    background: var(--surface); color: var(--text2); border: 1px solid var(--border-strong); cursor: pointer; font-family: inherit;
+  }
+  #dots button.on { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 500; }
+  #stepno { font-size: 13px; color: var(--text2); }
+
+  .scene { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 8px 4px 4px; }
+  svg { display: block; width: 100%; height: auto; }
+  svg text { font-family: inherit; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 0 12px 10px; font-size: 12px; color: var(--text2); }
+  .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+  .fade { transition: opacity .3s; }
+
+  #card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin: 14px 0; }
+  .kicker { font-size: 13px; color: var(--text2); }
+  .ctitle { font-size: 17px; font-weight: 500; margin: 2px 0 6px; }
+  .ctext { font-size: 14px; line-height: 1.7; color: var(--text); }
+  .box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-top: 12px; font-size: 15px; line-height: 1.8; }
+  .box b { font-weight: 500; color: var(--amber); }
+  .muted { color: var(--text2); font-size: 13px; }
+  .barlabel { font-size: 12px; color: var(--text2); margin: 10px 0 4px; }
+  .bartrack { height: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
+  .barfill { height: 100%; border-radius: 5px; }
+  .barval { font-size: 13px; margin-top: 3px; }
+
+  .nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 18px; }
+  .nav button {
+    background: var(--surface2); color: var(--text); border: 1px solid var(--border-strong);
+    border-radius: 10px; padding: 12px; font-size: 15px; cursor: pointer; font-family: inherit;
+  }
+  .nav button:hover { background: var(--border); }
+
+  .ctl { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
+  .ctl label { font-size: 13px; color: var(--text2); min-width: 84px; }
+  .ctl input[type=range] { flex: 1; accent-color: var(--amber); }
+  .ctl .val { font-size: 14px; font-weight: 500; min-width: 46px; text-align: right; }
+
+  footer { margin-top: 26px; font-size: 12px; color: var(--text2); border-top: 1px solid var(--border); padding-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="toprow">
+      <div>
+        <h1 id="t-title"></h1>
+        <p class="sub" id="t-sub"></p>
+      </div>
+      <div class="lang">
+        <button id="b-hi" type="button">हिंदी</button>
+        <button id="b-en" type="button">English</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="stephead">
+    <div id="dots"></div>
+    <div id="stepno"></div>
+  </div>
+
+  <div class="scene">
+    <svg viewBox="0 0 340 200" role="img" aria-label="Diagram">
+      <defs>
+        <marker id="mA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#EF9F27"/></marker>
+        <marker id="mG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#9a9a96"/></marker>
+        <marker id="mC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#F0704A"/></marker>
+      </defs>
+
+      <circle cx="26" cy="100" r="15" fill="#EF9F27"/>
+      <text id="s-sun" x="26" y="132" font-size="12" text-anchor="middle" fill="#a4a4ac"></text>
+
+      <g id="rays" class="fade">
+        <line x1="52" y1="62" x2="174" y2="62" stroke="#EF9F27" stroke-width="2.5" marker-end="url(#mA)"/>
+        <line x1="52" y1="81" x2="156" y2="81" stroke="#EF9F27" stroke-width="2.5" marker-end="url(#mA)"/>
+        <line x1="52" y1="100" x2="152" y2="100" stroke="#EF9F27" stroke-width="2.5" marker-end="url(#mA)"/>
+        <line x1="52" y1="119" x2="156" y2="119" stroke="#EF9F27" stroke-width="2.5" marker-end="url(#mA)"/>
+        <line x1="52" y1="138" x2="174" y2="138" stroke="#EF9F27" stroke-width="2.5" marker-end="url(#mA)"/>
+      </g>
+
+      <circle id="planet" cx="200" cy="100" r="44" fill="#26262b" stroke="#3d3d44" stroke-width="1" style="transition: stroke .3s"/>
+
+      <g id="disc" class="fade">
+        <line x1="200" y1="56" x2="200" y2="144" stroke="#EF9F27" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <text id="s-disc" x="200" y="46" font-size="12" font-weight="500" text-anchor="middle" fill="#f2f2f3"></text>
+      </g>
+
+      <g id="refl" class="fade">
+        <line id="r1" x1="168" y1="80" x2="108" y2="36" stroke="#9a9a96" stroke-width="3" marker-end="url(#mG)"/>
+        <line id="r2" x1="168" y1="120" x2="108" y2="164" stroke="#9a9a96" stroke-width="3" marker-end="url(#mG)"/>
+        <text id="s-refl" x="40" y="24" font-size="12" fill="#a4a4ac"></text>
+      </g>
+
+      <g id="ir" class="fade">
+        <line x1="246" y1="119" x2="274" y2="131" stroke="#F0704A" stroke-width="3" marker-end="url(#mC)"/>
+        <line x1="219" y1="146" x2="231" y2="174" stroke="#F0704A" stroke-width="3" marker-end="url(#mC)"/>
+        <line x1="181" y1="146" x2="169" y2="174" stroke="#F0704A" stroke-width="3" marker-end="url(#mC)"/>
+        <line x1="154" y1="119" x2="126" y2="131" stroke="#F0704A" stroke-width="3" marker-end="url(#mC)"/>
+        <line x1="154" y1="81" x2="126" y2="69" stroke="#F0704A" stroke-width="3" marker-end="url(#mC)"/>
+        <line x1="181" y1="54" x2="169" y2="26" stroke="#F0704A" stroke-width="3" marker-end="url(#mC)"/>
+        <line x1="219" y1="54" x2="231" y2="26" stroke="#F0704A" stroke-width="3" marker-end="url(#mC)"/>
+        <line x1="246" y1="81" x2="274" y2="69" stroke="#F0704A" stroke-width="3" marker-end="url(#mC)"/>
+        <text id="s-surf1" x="305" y="104" font-size="12" font-weight="500" text-anchor="middle" fill="#f2f2f3"></text>
+        <text x="305" y="120" font-size="12" font-weight="500" text-anchor="middle" fill="#f2f2f3">4πr²</text>
+      </g>
+    </svg>
+    <div class="legend">
+      <span><span class="dot" style="background:#EF9F27"></span><span id="l-sun"></span></span>
+      <span><span class="dot" style="background:#9a9a96"></span><span id="l-refl"></span></span>
+      <span><span class="dot" style="background:#F0704A"></span><span id="l-ir"></span></span>
+    </div>
+  </div>
+
+  <div id="card"></div>
+
+  <div class="nav">
+    <button id="prev" type="button"></button>
+    <button id="next" type="button"></button>
+  </div>
+
+  <div class="ctl">
+    <label for="S" id="lab-S"></label>
+    <input type="range" id="S" min="500" max="2700" step="1" value="1361">
+    <span class="val" id="S-out"></span>
+  </div>
+  <div class="ctl">
+    <label for="A" id="lab-A"></label>
+    <input type="range" id="A" min="0" max="0.9" step="0.01" value="0.3">
+    <span class="val" id="A-out"></span>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+var sig = 5.67e-8, R = 6.371e6, step = 1, lang = 'hi';
+try { var saved = localStorage.getItem('np-lang'); if (saved === 'en' || saved === 'hi') lang = saved; } catch (e) {}
+
+var sup = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+function sci(v, d) {
+  var dd = (d === undefined) ? 2 : d;
+  var e = Math.floor(Math.log10(v));
+  var m = v / Math.pow(10, e);
+  var s = m.toFixed(dd);
+  if (parseFloat(s) >= 10) { m = m / 10; e = e + 1; s = m.toFixed(dd); }
+  return s + ' × 10' + String(e).split('').map(function (c) { return sup[c]; }).join('');
+}
+function r0(x) { return Math.round(x).toString(); }
+
+var TX = {
+  hi: {
+    title: 'नेकेड प्लैनेट मॉडल',
+    sub: 'बिना वायुमंडल वाले ग्रह का तापमान, पाँच चरणों में',
+    sun: 'सूरज', disc: 'चकती πr²', refl: 'लौटी (α)', surf: 'पूरी सतह',
+    lsun: 'सूरज की रोशनी', lrefl: 'लौटी', lir: 'इंफ्रारेड',
+    prev: '← पिछला', next: 'अगला →', restart: 'फिर से शुरू ↺',
+    labS: 'S (W/m²)', labA: 'α अल्बीडो',
+    stepWord: 'चरण', of: '/',
+    foot: 'आधारित: डेविड आर्चर, Global Warming: Understanding the Forecast (लेयर मॉडल का पहला चरण). सूरज की तीव्रता S और अल्बीडो α स्लाइडर से बदले जा सकते हैं. अंक अनुमानित हैं और पाठ्यपुस्तक के मान से थोड़े अलग हो सकते हैं.',
+    t1: 'कुल आती ऊर्जा',
+    d1: 'किरणें समानांतर आती हैं और ग्रह उन्हें एक चकती की तरह रोकता है, जिसका क्षेत्रफल πr² है.',
+    f1: 'कुल आती = S × πr²',
+    t2: 'कुल सोखी ऊर्जा',
+    d2: 'α हिस्सा लौट जाता है, इसलिए सिर्फ़ (1 − α) हिस्सा ग्रह को गर्म करता है.',
+    f2: 'कुल सोखी = (1 − α) × S × πr²',
+    t3: 'कुल जाती ऊर्जा',
+    d3: 'गर्म ग्रह अपनी पूरी सतह के हर वर्ग मीटर से σT⁴ वॉट इंफ्रारेड छोड़ता है. पूरी सतह का क्षेत्रफल 4πr² है.',
+    f3: 'कुल जाती = σT⁴ × 4πr²',
+    n3: 'T अभी अज्ञात है, वही निकालना है',
+    t4: 'संतुलन: सोखी = जाती',
+    d4: 'स्थिर तापमान पर दोनों बराबर होते हैं. दोनों तरफ़ πr² है, इसलिए वह कट जाता है.',
+    b1: 'कुल सोखी', b2: 'कुल जाती (संतुलन पर)',
+    t5: 'तापमान निकालना',
+    d5: 'पहले T⁴ अकेला करते हैं, फिर चौथा मूल लेते हैं.',
+    root: 'चौथा मूल',
+    cold: 'असली पृथ्वी लगभग 288 K पर है, यानी यह मॉडल {x} K ठंडा आता है.',
+    warm: 'असली पृथ्वी लगभग 288 K पर है, यानी यह मॉडल {x} K गर्म आता है.'
+  },
+  en: {
+    title: 'Naked Planet Model',
+    sub: 'Temperature of a planet with no atmosphere, in five steps',
+    sun: 'Sun', disc: 'Disc πr²', refl: 'Reflected (α)', surf: 'Whole surface',
+    lsun: 'Sunlight', lrefl: 'Reflected', lir: 'Infrared',
+    prev: '← Previous', next: 'Next →', restart: 'Restart ↺',
+    labS: 'S (W/m²)', labA: 'α albedo',
+    stepWord: 'Step', of: '/',
+    foot: 'Based on David Archer, Global Warming: Understanding the Forecast (the first stage of the layer model). Solar intensity S and albedo α can be changed with the sliders. Values are approximate and may differ slightly from your textbook.',
+    t1: 'Total incoming energy',
+    d1: 'The rays are parallel, so the planet intercepts them like a flat disc of area πr².',
+    f1: 'Total incoming = S × πr²',
+    t2: 'Total absorbed energy',
+    d2: 'A fraction α is reflected back, so only (1 − α) of it heats the planet.',
+    f2: 'Total absorbed = (1 − α) × S × πr²',
+    t3: 'Total outgoing energy',
+    d3: 'The hot planet radiates infrared from every square metre of its whole surface, σT⁴ watts each. The whole surface has area 4πr².',
+    f3: 'Total outgoing = σT⁴ × 4πr²',
+    n3: 'T is still unknown, that is what we solve for',
+    t4: 'Balance: absorbed = outgoing',
+    d4: 'At a steady temperature the two are equal. πr² appears on both sides, so it cancels.',
+    b1: 'Total absorbed', b2: 'Total outgoing (at balance)',
+    t5: 'Finding the temperature',
+    d5: 'First isolate T⁴, then take the fourth root.',
+    root: 'fourth root',
+    cold: 'The real Earth is at about 288 K, so this model comes out {x} K colder.',
+    warm: 'The real Earth is at about 288 K, so this model comes out {x} K warmer.'
+  }
+};
+
+var Sel = document.getElementById('S'), Ael = document.getElementById('A');
+
+function vals() {
+  var S = parseFloat(Sel.value), a = parseFloat(Ael.value);
+  var disc = Math.PI * R * R, surf = 4 * disc;
+  var Pin = S * disc, Pabs = (1 - a) * Pin, q = Pabs / surf, T = Math.pow(q / sig, 0.25);
+  return { S: S, a: a, disc: disc, surf: surf, Pin: Pin, Pabs: Pabs, q: q, T: T };
+}
+
+function bar(label, w, col, val) {
+  return '<div class="barlabel">' + label + '</div>' +
+    '<div class="bartrack"><div class="barfill" style="width:' + w + '%;background:' + col + '"></div></div>' +
+    '<div class="barval">' + val + ' W</div>';
+}
+
+function head(L, n) {
+  return '<div class="kicker">' + L.stepWord + ' ' + n + '</div><div class="ctitle">' + L['t' + n] + '</div><div class="ctext">' + L['d' + n] + '</div>';
+}
+
+function card(v) {
+  var L = TX[lang], h = '';
+  if (step === 1) {
+    h = head(L, 1) + '<div class="box">' + L.f1 + '<br>= ' + r0(v.S) + ' × ' + sci(v.disc) + '<br><b>= ' + sci(v.Pin) + ' W</b></div>';
+  } else if (step === 2) {
+    h = head(L, 2) + '<div class="box">' + L.f2 + '<br>= ' + (1 - v.a).toFixed(2) + ' × ' + sci(v.Pin) + '<br><b>= ' + sci(v.Pabs) + ' W</b></div>';
+  } else if (step === 3) {
+    h = head(L, 3) + '<div class="box">' + L.f3 + '<br>4πr² = ' + sci(v.surf) + ' m²<br><span class="muted">' + L.n3 + '</span></div>';
+  } else if (step === 4) {
+    h = head(L, 4) +
+      '<div class="box">(1 − α) × S × <s>πr²</s> = σT⁴ × 4 × <s>πr²</s><br><b>σT⁴ = (1 − α) × S ÷ 4 = ' + r0(v.q) + ' W/m²</b></div>' +
+      bar(L.b1, 100, '#EF9F27', sci(v.Pabs)) + bar(L.b2, 100, '#F0704A', sci(v.Pabs));
+  } else {
+    var d = v.T - 288;
+    var msg = (d < 0 ? L.cold : L.warm).replace('{x}', r0(Math.abs(d)));
+    h = head(L, 5) +
+      '<div class="box">σT⁴ = ' + r0(v.q) + ' W/m²<br>T⁴ = ' + r0(v.q) + ' ÷ (5.67 × 10⁻⁸) = ' + sci(v.q / sig) + '<br>T = ' + L.root + '<br><b>T = ' + r0(v.T) + ' K = ' + r0(v.T - 273.15) + ' °C</b></div>' +
+      '<div class="muted" style="margin-top:12px">' + msg + '</div>';
+  }
+  document.getElementById('card').innerHTML = h;
+}
+
+function scene() {
+  var op = { 1: [1, 1, 0, 0], 2: [1, 0.4, 1, 0], 3: [0.25, 0, 0, 1], 4: [0.6, 0.6, 0.6, 0.6], 5: [0.35, 0, 0.3, 1] }[step];
+  document.getElementById('rays').style.opacity = op[0];
+  document.getElementById('disc').style.opacity = op[1];
+  document.getElementById('refl').style.opacity = op[2];
+  document.getElementById('ir').style.opacity = op[3];
+  document.getElementById('planet').setAttribute('stroke', step === 5 ? '#F0704A' : '#3d3d44');
+  var a = parseFloat(Ael.value), w = (1.5 + a * 7).toFixed(1);
+  document.getElementById('r1').setAttribute('stroke-width', w);
+  document.getElementById('r2').setAttribute('stroke-width', w);
+}
+
+function buildDots() {
+  var L = TX[lang], el = document.getElementById('dots');
+  el.innerHTML = '';
+  for (var i = 1; i <= 5; i++) {
+    (function (i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', L.stepWord + ' ' + i);
+      b.textContent = i;
+      if (i === step) b.className = 'on';
+      b.onclick = function () { step = i; render(); };
+      el.appendChild(b);
+    })(i);
+  }
+  document.getElementById('stepno').textContent = L.stepWord + ' ' + step + ' ' + L.of + ' 5';
+}
+
+function labels() {
+  var L = TX[lang];
+  document.documentElement.setAttribute('lang', lang);
+  document.title = 'Naked Planet Model | नेकेड प्लैनेट मॉडल';
+  document.getElementById('t-title').textContent = L.title;
+  document.getElementById('t-sub').textContent = L.sub;
+  document.getElementById('s-sun').textContent = L.sun;
+  document.getElementById('s-disc').textContent = L.disc;
+  document.getElementById('s-refl').textContent = L.refl;
+  document.getElementById('s-surf1').textContent = L.surf;
+  document.getElementById('l-sun').textContent = L.lsun;
+  document.getElementById('l-refl').textContent = L.lrefl;
+  document.getElementById('l-ir').textContent = L.lir;
+  document.getElementById('prev').textContent = L.prev;
+  document.getElementById('next').textContent = (step === 5) ? L.restart : L.next;
+  document.getElementById('lab-S').textContent = L.labS;
+  document.getElementById('lab-A').textContent = L.labA;
+  document.getElementById('foot').textContent = L.foot;
+  document.getElementById('b-hi').className = (lang === 'hi') ? 'on' : '';
+  document.getElementById('b-en').className = (lang === 'en') ? 'on' : '';
+}
+
+function render() {
+  var v = vals();
+  document.getElementById('S-out').textContent = r0(v.S);
+  document.getElementById('A-out').textContent = v.a.toFixed(2);
+  labels(); card(v); scene(); buildDots();
+}
+
+function setLang(l) {
+  lang = l;
+  try { localStorage.setItem('np-lang', l); } catch (e) {}
+  render();
+}
+
+document.getElementById('b-hi').onclick = function () { setLang('hi'); };
+document.getElementById('b-en').onclick = function () { setLang('en'); };
+document.getElementById('prev').onclick = function () { if (step > 1) { step--; render(); } };
+document.getElementById('next').onclick = function () { step = (step === 5) ? 1 : step + 1; render(); };
+Sel.addEventListener('input', render);
+Ael.addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
