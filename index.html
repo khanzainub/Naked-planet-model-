@@ -109,6 +109,8 @@
   <div class="nav modes">
     <button id="mode1" type="button"></button>
     <button id="mode2" type="button"></button>
+    <button id="mode3" type="button"></button>
+    <button id="mode4" type="button"></button>
   </div>
 
   <div id="m1">
@@ -285,6 +287,40 @@
 
     <footer id="foot2"></footer>
   </div><!-- /m2 -->
+
+  <div id="m3" style="display:none">
+    <div class="ctl">
+      <label for="R3" id="lab-R3"></label>
+      <input type="range" id="R3" min="0" max="9" step="1" value="0">
+      <span class="val" id="R3-out" style="min-width:62px;white-space:nowrap"></span>
+    </div>
+    <div class="scene">
+      <svg id="svg3" viewBox="0 0 340 300" role="img" aria-label="Diagram"></svg>
+      <div class="legend">
+        <span><span class="dot" style="background:#EF9F27"></span><span id="l3-sun"></span></span>
+        <span><span class="dot" style="background:#F0704A"></span><span id="l3-ir"></span></span>
+        <span><span class="dot" style="background:#3d3d44"></span><span id="l3-atm"></span></span>
+      </div>
+    </div>
+    <div id="card3"></div>
+    <div class="nav">
+      <button id="b3-prev" type="button"></button>
+      <button id="b3-next" type="button"></button>
+      <button id="b3-play" type="button"></button>
+      <button id="b3-eq" type="button"></button>
+    </div>
+    <div class="ctl">
+      <label for="S3" id="lab-S3"></label>
+      <input type="range" id="S3" min="500" max="2700" step="1" value="1361">
+      <span class="val" id="S3-out"></span>
+    </div>
+    <div class="ctl">
+      <label for="A3" id="lab-A3"></label>
+      <input type="range" id="A3" min="0" max="0.9" step="0.01" value="0.3">
+      <span class="val" id="A3-out"></span>
+    </div>
+    <footer id="foot3"></footer>
+  </div><!-- /m3 -->
 </div>
 
 <script>
@@ -461,10 +497,12 @@ var TX2 = {
 
 function render2() {
   var L = TX2[lang], LT = TX[lang], on = (mode === 2);
-  g2('m1').style.display = on ? 'none' : '';
+  g2('m1').style.display = (mode === 1) ? '' : 'none';
   g2('m2').style.display = on ? '' : 'none';
+  var L3 = TX3[lang];
   g2('mode1').textContent = L.m1; g2('mode2').textContent = L.m2;
-  g2('mode1').className = on ? '' : 'on'; g2('mode2').className = on ? 'on' : '';
+  g2('mode3').textContent = L3.m3; g2('mode4').textContent = L3.m4;
+  for (var mi = 1; mi <= 4; mi++) g2('mode' + mi).className = (mode === mi) ? 'on' : '';
   g2('S2').value = Sel.value; g2('A2').value = Ael.value; g2('E2').value = Eel.value;
   if (!on) return;
 
@@ -553,6 +591,160 @@ function play2() {
   render();
 }
 
+/* ================= Two- and three-layer models (Archer) ================= */
+var k3 = 0;
+var TX3 = {
+  hi: {
+    m3: 'दो-परत मॉडल', m4: 'तीन-परत मॉडल', nw: ['दो', 'तीन'],
+    title: '{n}-परत ग्रीनहाउस मॉडल',
+    sub: 'वायुमंडल की {n} परतों वाली पृथ्वी, दौर दर दौर',
+    layer: 'परत {n}', topS: ' (ऊपर)',
+    tk: 'दौर {k}: परतें सोखती और दोबारा छोड़ती हैं',
+    d0: 'सतह अभी सिर्फ़ उतना छोड़ रही है जितना सूरज से सोखती है. हर परत नीचे से आया इंफ्रारेड सोखकर ऊपर और नीचे बराबर छोड़ती है, इसलिए अंतरिक्ष में कम ही जाता है.',
+    dk: 'सतह को अब धूप के साथ सबसे नीचे की परत से आती ऊर्जा भी मिलती है, इसलिए वह गर्म होकर और इंफ्रारेड छोड़ती है. हर परत नीचे और ऊपर की परत से मिली ऊर्जा को फिर बराबर बाँट देती है.',
+    deq: 'सतह, हर परत और अंतरिक्ष में जाती ऊर्जा, सब संतुलन में हैं. अंतरिक्ष में उतनी ही ऊर्जा जाती है जितनी सूरज से सोखी गई, पर सतह तक वह कई गुना होकर लौटती है.',
+    e1: 'हर परत: जितना सोखती है उतना छोड़ती है (नीचे से + ऊपर से = 2 × उत्सर्जन)',
+    e4: 'अंतरिक्ष में जाता = सबसे ऊपरी परत से ऊपर',
+    eN: 'संतुलन पर: I<sub>↑,g</sub> = (परतें + 1) × I<sub>solar</sub>',
+    temps: 'Tg = {a} K',
+    foot3: 'आधारित: डेविड आर्चर, Global Warming: Understanding the Forecast (बहु-परत मॉडल का विस्तार). हर परत को सारा इंफ्रारेड सोखने वाली (ε = 1) और सूरज की रोशनी के लिए पारदर्शी माना गया है. इसमें संवहन या बादल शामिल नहीं हैं. दौर-दर-दौर चित्रण में परतें हर दौर पर आपस में तुरंत संतुलित मानी गई हैं और सिर्फ़ सतह धीरे-धीरे गर्म होती है. संतुलन के अंक इन्हीं समीकरणों से निकलते हैं. सोखी धूप नेकेड प्लैनेट की तरह (1 − α) × S ÷ 4 से आती है.',
+    tipLay: 'यह परत सारा इंफ्रारेड सोखती है (ε = 1) और ऊपर-नीचे बराबर छोड़ती है.',
+    tipArr: 'इंफ्रारेड ऊर्जा का प्रवाह, W/m² में'
+  },
+  en: {
+    m3: 'Two-layer model', m4: 'Three-layer model', nw: ['Two', 'Three'],
+    title: '{n}-Layer Greenhouse Model',
+    sub: 'Earth with {n} atmospheric layers, followed round by round',
+    layer: 'Layer {n}', topS: ' (top)',
+    tk: 'Round {k}: the layers absorb and re-emit',
+    d0: 'The surface is still emitting only as much as it absorbs from the Sun. Each layer absorbs the infrared from below and emits equally up and down, so little reaches space.',
+    dk: 'The surface now receives sunlight plus the lowest layer’s downward radiation, so it warms and emits more infrared. Each layer again splits what it receives from the layers below and above equally, up and down.',
+    deq: 'The surface, every layer and the energy escaping to space are all in balance. Space receives exactly what the Sun supplied, yet the surface receives it back many times over.',
+    e1: 'Each layer: emits what it absorbs (from below + from above = 2 × emission)',
+    e4: 'Escaping to space = upward emission of the top layer',
+    eN: 'At equilibrium: I<sub>↑,g</sub> = (layers + 1) × I<sub>solar</sub>',
+    temps: 'Tg = {a} K',
+    foot3: 'Based on David Archer, Global Warming: Understanding the Forecast (extending the layer model). Each layer is treated as absorbing all infrared (ε = 1) and as transparent to sunlight. It does not include convection or clouds. In the round-by-round view the layers are assumed to balance among themselves instantly each round, while only the surface warms gradually. The equilibrium values come directly from these equations. The absorbed sunlight comes from (1 − α) × S ÷ 4, as in the Naked Planet.',
+    tipLay: 'This layer absorbs all infrared (ε = 1) and emits equally up and down.',
+    tipArr: 'Infrared energy flow, in W/m²'
+  }
+};
+
+function calc3(N, I, k, KM) {
+  var Ginf = (N + 1) * I, r = N / (N + 1);
+  var G = (k >= KM) ? Ginf : Ginf - (Ginf - I) * Math.pow(r, k);
+  var E = [G], j;                       /* E[j]: emission of layer j (counted from the surface), each way */
+  for (j = 1; j <= N; j++) E[j] = G * (N + 1 - j) / (N + 1);
+  E[N + 1] = 0;
+  return { G: G, E: E };
+}
+
+function svg3(N, L, L2, I, c) {
+  var lh = 30, gh = 52, y0 = 70, yl = {}, j, o = [], E = c.E, G = c.G;
+  for (j = N; j >= 1; j--) yl[j] = y0 + (N - j) * (lh + gh);
+  var ys = yl[1] + lh + gh, H = ys + 44;
+  function up(yf, yt, v, w, nm) {
+    var m = (yf + yt) / 2;
+    return '<g><title>' + L.tipArr + '</title><line x1="156" y1="' + yf + '" x2="156" y2="' + yt + '" stroke="#F0704A" stroke-width="' + wd(v) + '" marker-end="url(#mC3)"/>' +
+      '<text class="hl" x="166" y="' + (m + 4) + '" font-size="12" font-weight="500" fill="#F0704A">' + r0(v) + ' W/m²</text>' +
+      (nm ? '<text class="hl" x="166" y="' + (m + 17) + '" font-size="10" fill="#a4a4ac">' + nm + '</text>' : '') + '</g>';
+  }
+  function dn(yf, yt, v) {
+    var m = (yf + yt) / 2;
+    return '<g><title>' + L.tipArr + '</title><line x1="252" y1="' + yf + '" x2="252" y2="' + yt + '" stroke="#F0704A" stroke-width="' + wd(v) + '" marker-end="url(#mC3)"/>' +
+      '<text class="hl" x="262" y="' + (m + 4) + '" font-size="12" font-weight="500" fill="#F0704A">' + r0(v) + ' W/m²</text></g>';
+  }
+  var bal = c.bal, st = bal ? '#F0704A' : '#3d3d44';
+  o.push('<defs><marker id="mA3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#EF9F27"/></marker><marker id="mC3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#F0704A"/></marker></defs>');
+  o.push('<text x="195" y="14" font-size="12" text-anchor="middle" fill="#a4a4ac">' + L2.space + '</text>');
+  o.push('<circle cx="24" cy="46" r="14" fill="#EF9F27"/><text x="24" y="76" font-size="12" text-anchor="middle" fill="#a4a4ac">' + L2.sun + '</text>');
+  for (j = N; j >= 1; j--) {
+    var n = N + 1 - j, nm = fm(L.layer, { n: n }) + (n === 1 ? L.topS : '');
+    o.push('<g><title>' + L.tipLay + '</title><rect x="60" y="' + yl[j] + '" width="270" height="' + lh + '" rx="8" fill="#26262b" stroke="' + st + '"/>' +
+      '<text x="195" y="' + (yl[j] + 13) + '" font-size="11" font-weight="500" text-anchor="middle" fill="#f2f2f3">' + nm + ' · T = ' + r0(Tk(E[j])) + ' K</text>' +
+      '<text x="195" y="' + (yl[j] + 25) + '" font-size="10" text-anchor="middle" fill="#a4a4ac">' + fm(L2.atmLine, { g: r0(E[j - 1] + E[j + 1]), h: r0(E[j]) }) + '</text></g>');
+  }
+  o.push('<g><title>' + L2.tipSurf + '</title><rect x="60" y="' + ys + '" width="270" height="36" rx="8" fill="#26262b" stroke="' + st + '"/>' +
+    '<text x="195" y="' + (ys + 15) + '" font-size="11" font-weight="500" text-anchor="middle" fill="#f2f2f3">' + L2.surf + ' · Tg = ' + r0(Tk(G)) + ' K</text>' +
+    '<text x="195" y="' + (ys + 29) + '" font-size="10" text-anchor="middle" fill="#a4a4ac">' + fm(L2.sum, { a: r0(I), b: r0(E[1]), c: r0(I + E[1]) }) + '</text></g>');
+  o.push('<g><title>' + L2.tipSolar + '</title><line x1="30" y1="60" x2="74" y2="' + (ys - 2) + '" stroke="#EF9F27" stroke-width="' + wd(I) + '" marker-end="url(#mA3)"/>' +
+    '<text class="hl" x="84" y="' + (ys - 30) + '" font-size="12" font-weight="500" fill="#EF9F27">' + r0(I) + ' W/m²</text>' +
+    '<text class="hl" x="84" y="' + (ys - 17) + '" font-size="10" fill="#a4a4ac">' + L2.nSolar + '</text></g>');
+  o.push(up(ys - 2, yl[1] + lh + 3, G, 0, ''));
+  o.push(dn(yl[1] + lh + 2, ys - 3, E[1]));
+  for (j = 1; j < N; j++) {
+    o.push(up(yl[j] - 2, yl[j + 1] + lh + 3, E[j], 0, ''));
+    o.push(dn(yl[j + 1] + lh + 2, yl[j] - 3, E[j + 1]));
+  }
+  o.push(up(yl[N] - 2, 26, E[N], 0, L2.nEsc));
+  return { html: o.join(''), H: H };
+}
+
+function render3() {
+  var on = (mode >= 3);
+  g2('m3').style.display = on ? '' : 'none';
+  g2('S3').value = Sel.value; g2('A3').value = Ael.value;
+  if (!on) return;
+  var N = mode - 1, L = TX3[lang], L2 = TX2[lang], LT = TX[lang];
+  var KM = (N === 2) ? 9 : 12, k = Math.min(k3, KM), eq = (k >= KM);
+  var S = parseFloat(Sel.value), al = parseFloat(Ael.value), I = (1 - al) * S / 4;
+  var c = calc3(N, I, k, KM), G = c.G, E = c.E, rec = I + E[1];
+  c.bal = eq || Math.abs(rec - G) < 0.05;
+  var Tg = Tk(G), T0 = Tk(I), esc = E[N];
+  function T(id, x) { g2(id).textContent = x; }
+
+  T('t-title', fm(L.title, { n: L.nw[N - 2] })); T('t-sub', fm(L.sub, { n: L.nw[N - 2].toLowerCase() }));
+  g2('R3').max = KM; g2('R3').value = k;
+  T('lab-R3', L2.labR); T('R3-out', eq ? L2.eqS : k);
+  T('lab-S3', LT.labS); T('lab-A3', LT.labA); T('S3-out', r0(S)); T('A3-out', al.toFixed(2));
+  g2('S3').setAttribute('title', LT.tipS); g2('A3').setAttribute('title', LT.tipA); g2('R3').setAttribute('title', L2.tipR);
+  T('l3-sun', L2.lsun); T('l3-ir', L2.lir); T('l3-atm', L2.lat);
+  var sv = svg3(N, L, L2, I, c);
+  g2('svg3').setAttribute('viewBox', '0 0 340 ' + sv.H); g2('svg3').innerHTML = sv.html;
+
+  T('b3-prev', L2.prev); T('b3-next', eq ? L2.restart : L2.next);
+  T('b3-play', timer ? L2.pause : L2.play); T('b3-eq', L2.eq);
+  g2('b3-prev').disabled = (k === 0); g2('b3-eq').disabled = eq;
+  g2('b3-prev').setAttribute('title', L2.tipPrev); g2('b3-next').setAttribute('title', L2.tipNext);
+  g2('b3-play').setAttribute('title', L2.tipPlay); g2('b3-eq').setAttribute('title', L2.tipEq);
+  T('foot3', L.foot3);
+
+  function mk(ok) { return ok ? ' <span class="ok">✓</span>' : ' <span class="bad">✗</span>'; }
+  var kick = eq ? L2.eqW : (k === 0 ? L2.start : L2.round + ' ' + k);
+  var title = eq ? L2.teq : (k === 0 ? L2.t0 : fm(L.tk, { k: k }));
+  var desc = eq ? L.deq : (k === 0 ? L.d0 : L.dk);
+  var rows = '', j;
+  for (j = N; j >= 1; j--) {
+    var n = N + 1 - j;
+    rows += fm(L.layer, { n: n }) + ': ' + n1(E[j - 1]) + ' + ' + n1(E[j + 1]) + ' = 2 × ' + n1(E[j]) + mk(true) + '<br>';
+  }
+  var okEsc = Math.abs(esc - I) < 0.05;
+  var h3 = '<div class="kicker">' + kick + '</div><div class="ctitle">' + title + '</div><div class="ctext">' + desc + '</div>' +
+    '<div class="box">' +
+    '<div class="eqr"><div class="muted">' + L2.e0 + '</div>I<sub>solar</sub> = (1 − α) × S ÷ 4<br><b>' + (1 - al).toFixed(2) + ' × ' + r0(S) + ' ÷ 4 = ' + n1(I) + '</b></div>' +
+    '<div class="eqr"><div class="muted">' + L.e1 + '</div><b>' + rows + '</b></div>' +
+    '<div class="eqr"><div class="muted">' + L2.e3 + '</div>I<sub>↑,g</sub> = I<sub>solar</sub> + I<sub>↓,a</sub><br><b>' + n1(G) + (c.bal ? ' = ' : ' ≠ ') + n1(I) + ' + ' + n1(E[1]) + ' = ' + n1(rec) + '</b>' + mk(c.bal) + '</div>' +
+    '<div class="eqr"><div class="muted">' + L.e4 + '</div><b>' + n1(esc) + (okEsc ? ' = ' : ' ≠ ') + n1(I) + '</b>' + mk(okEsc) + '</div>' +
+    '<div class="eqr"><div class="muted">' + L.eN + '</div><b>' + (N + 1) + ' × ' + n1(I) + ' = ' + n1((N + 1) * I) + '</b></div>' +
+    '</div>' +
+    bar(L2.bAbs, 100, '#EF9F27', n1(I), 'W/m²') +
+    bar(L2.bEsc, Math.min(100, esc / I * 100).toFixed(1), '#F0704A', n1(esc), 'W/m²') +
+    '<div class="muted" style="margin-top:12px">' + fm(L.temps, { a: r0(Tg) }) + '</div>' +
+    '<div class="muted" style="margin-top:6px">' + (c.bal ? L2.sEq + ' ' + fm(L2.warm, { c: r0(T0), d: r0(Tg - T0) }) : fm(L2.sGain, { x: n1(rec - G), y: n1(I - esc) })) + '</div>';
+  g2('card3').innerHTML = h3;
+}
+
+function play3() {
+  var KM = (mode === 3) ? 9 : 12;
+  if (timer) { stopTimer(); render(); return; }
+  if (k3 >= KM) k3 = 0;
+  timer = setInterval(function () {
+    if (k3 < KM) k3++;
+    if (k3 >= KM) stopTimer();
+    render();
+  }, 1300);
+  render();
+}
 var Sel = document.getElementById('S'), Ael = document.getElementById('A'), Eel = document.getElementById('E');
 
 function vals() {
@@ -655,6 +847,7 @@ function render() {
   document.getElementById('E-out').textContent = v.e.toFixed(2);
   labels(); card(v); scene(); buildDots();
   render2();
+  render3();
 }
 
 function setLang(l) {
@@ -673,8 +866,18 @@ Eel.addEventListener('input', render);
 g2('S2').addEventListener('input', function () { Sel.value = g2('S2').value; render(); });
 g2('A2').addEventListener('input', function () { Ael.value = g2('A2').value; render(); });
 g2('E2').addEventListener('input', function () { Eel.value = g2('E2').value; render(); });
-g2('mode1').onclick = function () { mode = 1; stopTimer(); render(); };
-g2('mode2').onclick = function () { mode = 2; render(); };
+function setMode(m) { stopTimer(); mode = m; k2 = 0; k3 = 0; render(); }
+g2('mode1').onclick = function () { setMode(1); };
+g2('mode2').onclick = function () { setMode(2); };
+g2('mode3').onclick = function () { setMode(3); };
+g2('mode4').onclick = function () { setMode(4); };
+g2('S3').addEventListener('input', function () { Sel.value = g2('S3').value; render(); });
+g2('A3').addEventListener('input', function () { Ael.value = g2('A3').value; render(); });
+g2('b3-prev').onclick = function () { stopTimer(); if (k3 > 0) k3--; render(); };
+g2('b3-next').onclick = function () { stopTimer(); var KM = (mode === 3) ? 9 : 12; k3 = (k3 >= KM) ? 0 : k3 + 1; render(); };
+g2('b3-play').onclick = play3;
+g2('b3-eq').onclick = function () { stopTimer(); k3 = (mode === 3) ? 9 : 12; render(); };
+g2('R3').addEventListener('input', function () { stopTimer(); k3 = parseInt(g2('R3').value, 10); render(); });
 g2('b2-prev').onclick = function () { stopTimer(); if (k2 > 0) k2--; render(); };
 g2('b2-next').onclick = function () { stopTimer(); k2 = (k2 >= KMAX) ? 0 : k2 + 1; render(); };
 g2('b2-play').onclick = play2;
